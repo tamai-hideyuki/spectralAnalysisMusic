@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脳波エントレインメント音源生成・分析ツール</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 脳波エントレインメント音源生成・分析ツール</h1>
+            <p>バイノーラルビートを使用した脳波誘導音源の生成と音響分析</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- 左側：コントロールパネル -->
+            <aside class="control-panel">
+                <!-- 脳波タイプ選択 -->
+                <section class="brainwave-selector">
+                    <h2>脳波タイプ選択</h2>
+                    <div class="brainwave-buttons">
+                        <button class="wave-btn" data-wave="delta">
+                            <span class="wave-icon">δ</span>
+                            <span class="wave-name">デルタ波</span>
+                            <span class="wave-range">0.5-4Hz</span>
+                        </button>
+                        <button class="wave-btn" data-wave="theta">
+                            <span class="wave-icon">θ</span>
+                            <span class="wave-name">シータ波</span>
+                            <span class="wave-range">4-8Hz</span>
+                        </button>
+                        <button class="wave-btn" data-wave="alpha">
+                            <span class="wave-icon">α</span>
+                            <span class="wave-name">アルファ波</span>
+                            <span class="wave-range">8-13Hz</span>
+                        </button>
+                        <button class="wave-btn" data-wave="beta">
+                            <span class="wave-icon">β</span>
+                            <span class="wave-name">ベータ波</span>
+                            <span class="wave-range">13-30Hz</span>
+                        </button>
+                        <button class="wave-btn" data-wave="gamma">
+                            <span class="wave-icon">γ</span>
+                            <span class="wave-name">ガンマ波</span>
+                            <span class="wave-range">30-100Hz</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- パラメーター設定 -->
+                <section class="parameters">
+                    <h2>パラメーター設定</h2>
+
+                    <div class="param-group">
+                        <label for="targetFreq">ターゲット周波数: <span id="targetFreqValue">6</span> Hz</label>
+                        <input type="range" id="targetFreq" min="0.5" max="100" step="0.5" value="6">
+                    </div>
+
+                    <div class="param-group">
+                        <label for="carrierFreq">キャリア周波数: <span id="carrierFreqValue">200</span> Hz</label>
+                        <input type="range" id="carrierFreq" min="100" max="500" step="10" value="200">
+                    </div>
+
+                    <div class="param-group">
+                        <label for="volume">音量: <span id="volumeValue">50</span>%</label>
+                        <input type="range" id="volume" min="0" max="80" value="50">
+                    </div>
+
+                    <div class="param-group">
+                        <label for="pinkNoise">ピンクノイズ: <span id="pinkNoiseValue">20</span>%</label>
+                        <input type="range" id="pinkNoise" min="0" max="50" value="20">
+                    </div>
+
+                    <div class="param-group">
+                        <label for="duration">再生時間: <span id="durationValue">5</span>分</label>
+                        <input type="range" id="duration" min="1" max="30" value="5">
+                    </div>
+                </section>
+
+                <!-- コントロールボタン -->
+                <section class="controls">
+                    <button id="generateBtn" class="btn btn-primary">音源生成</button>
+                    <button id="playPauseBtn" class="btn btn-secondary" disabled>再生</button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>停止</button>
+                    <button id="downloadBtn" class="btn btn-success" disabled>WAVダウンロード</button>
+                </section>
+
+                <!-- ファイルアップロード -->
+                <section class="file-upload">
+                    <h2>ファイル分析</h2>
+                    <input type="file" id="fileInput" accept="audio/*">
+                    <label for="fileInput" class="file-label">音声ファイルを選択</label>
+                </section>
+            </aside>
+
+            <!-- 右側：視覚化パネル -->
+            <main class="visualization-panel">
+                <!-- 波形表示 -->
+                <section class="waveform-display">
+                    <h2>時間波形</h2>
+                    <canvas id="waveformCanvas"></canvas>
+                </section>
+
+                <!-- スペクトラム表示 -->
+                <section class="spectrum-display">
+                    <h2>周波数スペクトラム (0-100Hz)</h2>
+                    <canvas id="spectrumCanvas"></canvas>
+                    <div class="spectrum-legend">
+                        <span class="legend-item delta">デルタ (0.5-4Hz)</span>
+                        <span class="legend-item theta">シータ (4-8Hz)</span>
+                        <span class="legend-item alpha">アルファ (8-13Hz)</span>
+                        <span class="legend-item beta">ベータ (13-30Hz)</span>
+                        <span class="legend-item gamma">ガンマ (30-100Hz)</span>
+                    </div>
+                </section>
+
+                <!-- 脳波帯域パワー表示 -->
+                <section class="power-display">
+                    <h2>脳波帯域パワー分析</h2>
+                    <div class="power-meters">
+                        <div class="power-meter" data-wave="delta">
+                            <div class="meter-label">デルタ</div>
+                            <div class="meter-bar-container">
+                                <div class="meter-bar" id="deltaPower"></div>
+                            </div>
+                            <div class="meter-value">0%</div>
+                        </div>
+                        <div class="power-meter" data-wave="theta">
+                            <div class="meter-label">シータ</div>
+                            <div class="meter-bar-container">
+                                <div class="meter-bar" id="thetaPower"></div>
+                            </div>
+                            <div class="meter-value">0%</div>
+                        </div>
+                        <div class="power-meter" data-wave="alpha">
+                            <div class="meter-label">アルファ</div>
+                            <div class="meter-bar-container">
+                                <div class="meter-bar" id="alphaPower"></div>
+                            </div>
+                            <div class="meter-value">0%</div>
+                        </div>
+                        <div class="power-meter" data-wave="beta">
+                            <div class="meter-label">ベータ</div>
+                            <div class="meter-bar-container">
+                                <div class="meter-bar" id="betaPower"></div>
+                            </div>
+                            <div class="meter-value">0%</div>
+                        </div>
+                        <div class="power-meter" data-wave="gamma">
+                            <div class="meter-label">ガンマ</div>
+                            <div class="meter-bar-container">
+                                <div class="meter-bar" id="gammaPower"></div>
+                            </div>
+                            <div class="meter-value">0%</div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- 情報パネル -->
+        <footer class="info-panel">
+            <div class="info-content" id="infoContent">
+                <h3>使用方法</h3>
+                <p>1. 目的に応じた脳波タイプを選択してください</p>
+                <p>2. パラメーターを調整して音源を生成します</p>
+                <p>3. ヘッドフォンを使用して15-30分間お聴きください</p>
+                <p>⚠️ 安全のため、音量は80%以下に制限されています</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
